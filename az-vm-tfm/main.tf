@@ -42,8 +42,8 @@ resource "azurerm_subnet" "internal" {
 # 4. Public IP (So you can access the VM)
 resource "azurerm_public_ip" "pip" {
   name                = "${var.vm_name}-ip"
-  resource_group_name = azurerm_resource_group.main.name
-  location            = azurerm_resource_group.main.location
+  resource_group_name = var.resource_group_name
+  location            = var.location
   allocation_method   = "Static"
   sku                 = "Standard"
 }
@@ -51,8 +51,8 @@ resource "azurerm_public_ip" "pip" {
 # 5. Network Interface (NIC)
 resource "azurerm_network_interface" "nic" {
   name                = "${var.vm_name}-nic"
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+  location            = var.location
+  resource_group_name = var.resource_group_name
 
   ip_configuration {
     name                          = "internal"
@@ -65,8 +65,8 @@ resource "azurerm_network_interface" "nic" {
 # 6. Network Security Group (Allows SSH/RDP)
 resource "azurerm_network_security_group" "nsg" {
   name                = "${var.vm_name}-nsg"
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+  location            = var.location
+  resource_group_name = var.resource_group_name
 
   security_rule {
     name                       = "AllowSSH"
@@ -90,8 +90,8 @@ resource "azurerm_network_interface_security_group_association" "example" {
 # 7. The Virtual Machine
 resource "azurerm_linux_virtual_machine" "vm" {
   name                = var.vm_name
-  resource_group_name = azurerm_resource_group.main.name
-  location            = azurerm_resource_group.main.location
+  resource_group_name = var.resource_group_name
+  location            = var.location
   size                = "Standard_B1s" # Cost-effective size
   admin_username      = var.admin_username
   admin_password      = var.admin_password
