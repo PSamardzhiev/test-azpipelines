@@ -10,4 +10,4 @@ steps:
     azureSubscription: 'azure-tfm-sc' 
     scriptType: 'bash'
     scriptLocation: 'scriptPath'
-    scriptPath: './rg-display.sh'
+    scriptPath: '../scripts/rg-display.sh'
