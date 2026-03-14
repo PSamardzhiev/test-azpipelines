@@ -36,7 +36,7 @@ stages:
         command: 'init'
         workingDirectory: $(tf_working_dir)
         backendServiceArm: $(service_connection)
-        backendAzureRmResourceGroupName: $(rg-name)
+        backendAzureRmResourceGroupName: $(rg_name)
         backendAzureRmStorageAccountName: $(stacc_name)
         backendAzureRmContainerName: $(stacc_cnt_name)
         backendAzureRmKey: 'vm-deploy.tfstate'
