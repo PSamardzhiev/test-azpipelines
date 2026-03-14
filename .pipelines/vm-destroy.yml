@@ -1,49 +1,49 @@
-trigger: none # This prevents accidental runs
+trigger: none
 
 pool:
-  name: 'Default' # Your self-hosted agent
+  name: 'Default'
 
 variables:
 - group: 'dev-secrets' 
 - name: tf_working_dir
   value: '$(System.DefaultWorkingDirectory)/az-vm-tfm'
+- name: service_connection
+  value: 'azure-tfm-sc'
 
 stages:
 - stage: DestroyStage
   displayName: 'Terraform Destroy'
   jobs:
   - deployment: TerraformDestroy
-
-    environment: 'dev' 
+    environment: 'dev'
     strategy:
       runOnce:
         deploy:
           steps:
-          - checkout: self # Required to get your .tf files onto the agent
+          
+          - checkout: self 
 
-          - bash: |
-              echo "Initializing Terraform..."
-              terraform init \
-                -backend-config="storage_account_name=azweutfstate" \
-                -backend-config="container_name=tfstate" \
-                -backend-config="key=vm-deploy.tfstate" \
-                -backend-config="resource_group_name=tfm-tfstate"
+          - task: TerraformInstaller@1
+            inputs: { terraformVersion: 'latest' }
+
+          - task: TerraformTaskV4@4
             displayName: 'Terraform Init'
-            workingDirectory: $(tf_working_dir)
-            env:
-              ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-              ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-              ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
-              ARM_TENANT_ID: $(ARM_TENANT_ID)
+            inputs:
+              provider: 'azurerm'
+              command: 'init'
+              workingDirectory: $(tf_working_dir)
+              backendServiceArm: $(service_connection)
+              backendAzureRmResourceGroupName: 'tfm-tfstate'
+              backendAzureRmStorageAccountName: 'azweutfstate'
+              backendAzureRmContainerName: 'tfstate'
+              backendAzureRmKey: 'vm-deploy.tfstate'
 
-          - bash: |
-              echo "Starting Destruction..."
-              terraform destroy -auto-approve
+          - task: TerraformTaskV4@4
             displayName: 'Terraform Destroy'
-            workingDirectory: $(tf_working_dir)
+            inputs:
+              provider: 'azurerm'
+              command: 'destroy'
+              workingDirectory: $(tf_working_dir)
+              environmentServiceNameAzureRM: $(service_connection)
             env:
               TF_VAR_admin_password: $(VM_PASS)
-              ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-              ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-              ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
-              ARM_TENANT_ID: $(ARM_TENANT_ID)
