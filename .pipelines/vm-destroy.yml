@@ -20,8 +20,8 @@ stages:
       runOnce:
         deploy:
           steps:
-          - task: TerraformInstaller@1
-            inputs: { terraformVersion: '1.7.5' }
+          #- task: TerraformInstaller@1
+            #inputs: { terraformVersion: 'latest' }
 
           - task: TerraformTaskV4@4
             displayName: 'Terraform Init'
