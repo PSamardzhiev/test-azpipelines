@@ -48,6 +48,7 @@ resource "azurerm_public_ip" "pip" {
   location            = var.location
   allocation_method   = "Static"
   sku                 = "Standard"
+  depends_on = [ azurerm_resource_group.main ]
 }
 
 # 5. Network Interface (NIC)
@@ -82,6 +83,10 @@ resource "azurerm_network_security_group" "nsg" {
     source_address_prefix      = "*"
     destination_address_prefix = "*"
   }
+  depends_on = [ 
+    azurerm_resource_group.main,
+    azurerm_linux_virtual_machine.vm
+   ]
 }
 
 # Associate NSG with NIC
