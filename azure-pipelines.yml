@@ -1,0 +1,18 @@
+trigger: none
+
+# 1. Point this to your self-hosted agent pool
+pool:
+  name: 'Default' # Replace with the name of your agent pool
+
+steps:
+# 2. Use the Azure CLI task
+- task: AzureCLI@2
+  displayName: 'List All Resource Groups'
+  inputs:
+    # Use the EXACT name of the Service Connection you just created
+    azureSubscription: 'Your-Connection-Name' 
+    scriptType: 'bash'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      echo "Listing resource groups in table format..."
+      az group list --output table
