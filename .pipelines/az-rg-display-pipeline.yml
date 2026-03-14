@@ -3,11 +3,17 @@ trigger: none
 pool:
   name: 'Default'
 
+variables:
+  - name: az_subscription
+    value: 'azure-tfm-sc'
+  - name: scripts_path
+    value: 'scripts'
+
 steps:
 - task: AzureCLI@2
   displayName: 'Display Resource Group Names Only'
   inputs:
-    azureSubscription: 'azure-tfm-sc' 
+    azureSubscription: $(az_subscription)
     scriptType: 'bash'
     scriptLocation: 'scriptPath'
-    scriptPath: 'scripts/rg-display.sh'
+    scriptPath: '$(scripts_path)/rg-display.sh'

@@ -1,0 +1,49 @@
+trigger: none
+
+pool:
+  name: 'Default'
+
+variables:
+- group: 'dev-secrets' 
+- name: tf_working_dir
+  value: '$(System.DefaultWorkingDirectory)/az-vm-tfm'
+- name: service_connection
+  value: 'azure-tfm-sc'
+
+stages:
+- stage: DestroyStage
+  displayName: 'Terraform Destroy'
+  jobs:
+  - deployment: TerraformDestroy
+    environment: 'dev'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          
+          - checkout: self 
+
+          - task: TerraformInstaller@1
+            inputs: { terraformVersion: 'latest' }
+
+          - task: TerraformTaskV4@4
+            displayName: 'Terraform Init'
+            inputs:
+              provider: 'azurerm'
+              command: 'init'
+              workingDirectory: $(tf_working_dir)
+              backendServiceArm: $(service_connection)
+              backendAzureRmResourceGroupName: 'tfm-tfstate'
+              backendAzureRmStorageAccountName: 'azweutfstate'
+              backendAzureRmContainerName: 'tfstate'
+              backendAzureRmKey: 'vm-deploy.tfstate'
+
+          - task: TerraformTaskV4@4
+            displayName: 'Terraform Destroy'
+            inputs:
+              provider: 'azurerm'
+              command: 'destroy'
+              workingDirectory: $(tf_working_dir)
+              environmentServiceNameAzureRM: $(service_connection)
+            env:
+              TF_VAR_admin_password: $(VM_PASS)
