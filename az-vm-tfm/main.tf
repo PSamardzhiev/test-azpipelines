@@ -29,6 +29,7 @@ resource "azurerm_virtual_network" "vnet" {
   address_space       = ["10.0.0.0/16"]
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
+  depends_on = [ azurerm_resource_group.main ]
 }
 
 # 3. Subnet
@@ -37,22 +38,27 @@ resource "azurerm_subnet" "internal" {
   resource_group_name  = azurerm_resource_group.main.name
   virtual_network_name = azurerm_virtual_network.vnet.name
   address_prefixes     = ["10.0.2.0/24"]
+   depends_on = [ 
+    azurerm_resource_group.main,
+    azurerm_virtual_network.vnet 
+    ]
 }
 
 # 4. Public IP (So you can access the VM)
 resource "azurerm_public_ip" "pip" {
   name                = "${var.vm_name}-ip"
-  resource_group_name = azurerm_resource_group.main.name
-  location            = azurerm_resource_group.main.location
+  resource_group_name = var.resource_group_name
+  location            = var.location
   allocation_method   = "Static"
   sku                 = "Standard"
+  depends_on = [ azurerm_resource_group.main ]
 }
 
 # 5. Network Interface (NIC)
 resource "azurerm_network_interface" "nic" {
   name                = "${var.vm_name}-nic"
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+  location            = var.location
+  resource_group_name = var.resource_group_name
 
   ip_configuration {
     name                          = "internal"
@@ -60,13 +66,14 @@ resource "azurerm_network_interface" "nic" {
     private_ip_address_allocation = "Dynamic"
     public_ip_address_id          = azurerm_public_ip.pip.id
   }
+   depends_on = [ azurerm_resource_group.main ]
 }
 
 # 6. Network Security Group (Allows SSH/RDP)
 resource "azurerm_network_security_group" "nsg" {
   name                = "${var.vm_name}-nsg"
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+  location            = var.location
+  resource_group_name = var.resource_group_name
 
   security_rule {
     name                       = "AllowSSH"
@@ -79,19 +86,27 @@ resource "azurerm_network_security_group" "nsg" {
     source_address_prefix      = "*"
     destination_address_prefix = "*"
   }
+  depends_on = [ 
+    azurerm_resource_group.main,
+    azurerm_linux_virtual_machine.vm
+   ]
 }
 
 # Associate NSG with NIC
 resource "azurerm_network_interface_security_group_association" "example" {
   network_interface_id      = azurerm_network_interface.nic.id
   network_security_group_id = azurerm_network_security_group.nsg.id
+  depends_on = [ 
+    azurerm_network_security_group.nsg, 
+    azurerm_network_interface.nic 
+    ]
 }
 
 # 7. The Virtual Machine
 resource "azurerm_linux_virtual_machine" "vm" {
   name                = var.vm_name
-  resource_group_name = azurerm_resource_group.main.name
-  location            = azurerm_resource_group.main.location
+  resource_group_name = var.resource_group_name
+  location            = var.location
   size                = "Standard_B1s" # Cost-effective size
   admin_username      = var.admin_username
   admin_password      = var.admin_password
