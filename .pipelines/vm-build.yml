@@ -49,7 +49,6 @@ stages:
         workingDirectory: $(tf_working_dir)
         environmentServiceNameAzureRM: $(service_connection)
       env:
-        
         TF_VAR_admin_password: $(VM_PASS) 
 
 - stage: Deploy
