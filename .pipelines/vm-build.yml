@@ -11,6 +11,12 @@ variables:
   value: '$(System.DefaultWorkingDirectory)/az-vm-tfm'
 - name: service_connection
   value: 'azure-tfm-sc'
+- name: rg_name
+  value: 'tfm-tfstate'
+- name: stacc_name
+  value: 'azweutfstate'
+- name: stacc_cnt_name
+  value: 'tfstate'
 
 stages:
 
@@ -30,9 +36,9 @@ stages:
         command: 'init'
         workingDirectory: $(tf_working_dir)
         backendServiceArm: $(service_connection)
-        backendAzureRmResourceGroupName: 'tfm-tfstate'
-        backendAzureRmStorageAccountName: 'azweutfstate'
-        backendAzureRmContainerName: 'tfstate'
+        backendAzureRmResourceGroupName: $(rg-name)
+        backendAzureRmStorageAccountName: $(stacc_name)
+        backendAzureRmContainerName: $(stacc_cnt_name)
         backendAzureRmKey: 'vm-deploy.tfstate'
 
     - task: TerraformTaskV4@4
