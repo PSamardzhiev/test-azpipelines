@@ -29,6 +29,7 @@ resource "azurerm_virtual_network" "vnet" {
   address_space       = ["10.0.0.0/16"]
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
+  depends_on = [ azurerm_resource_group.main ]
 }
 
 # 3. Subnet
@@ -37,6 +38,7 @@ resource "azurerm_subnet" "internal" {
   resource_group_name  = azurerm_resource_group.main.name
   virtual_network_name = azurerm_virtual_network.vnet.name
   address_prefixes     = ["10.0.2.0/24"]
+   depends_on = [ azurerm_resource_group.main ]
 }
 
 # 4. Public IP (So you can access the VM)
@@ -60,6 +62,7 @@ resource "azurerm_network_interface" "nic" {
     private_ip_address_allocation = "Dynamic"
     public_ip_address_id          = azurerm_public_ip.pip.id
   }
+   depends_on = [ azurerm_resource_group.main ]
 }
 
 # 6. Network Security Group (Allows SSH/RDP)
@@ -85,6 +88,10 @@ resource "azurerm_network_security_group" "nsg" {
 resource "azurerm_network_interface_security_group_association" "example" {
   network_interface_id      = azurerm_network_interface.nic.id
   network_security_group_id = azurerm_network_security_group.nsg.id
+  depends_on = [ 
+    azurerm_network_security_group.nsg, 
+    azurerm_network_interface.nic 
+    ]
 }
 
 # 7. The Virtual Machine
