@@ -9,8 +9,5 @@ steps:
   inputs:
     azureSubscription: 'azure-tfm-sc' 
     scriptType: 'bash'
-    scriptLocation: 'inlineScript'
-    inlineScript: |
-      echo "--- Resource Group Names ---"
-      # This query selects only the 'name' attribute for every item in the list
-      az group list --query "[].name" --output table
+    scriptLocation: 'scriptPath'
+    scriptPath: './rg-display.sh'
